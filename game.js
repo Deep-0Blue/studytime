@@ -239,6 +239,21 @@ function named(value) {
   return commas(value);
 }
 
+function safeText(value) {
+  if (!state.safeMode) {
+    return value;
+  }
+  return value
+    .replace(/Epstein/gi, "MrBeast")
+    .replace(/Untouchable/gi, "Friendly")
+    .replace(/Baby Oil/gi, "Feastable")
+    .replace(/Island/gi, "Studio")
+    .replace(/Degree/gi, "Collab")
+    .replace(/Witness/gi, "Viewer")
+    .replace(/Blackmail/gi, "Challenge")
+    .replace(/Coverup/gi, "Giveaway");
+}
+
 function formatScore10(value) {
   const whole = value / SCORE_STEP;
   const tenth = value % SCORE_STEP;
@@ -472,22 +487,30 @@ function effectiveSkinId() {
 
 function renderSkin() {
   const active = SKINS.find((skin) => skin[0] === effectiveSkinId()) || SKINS[0];
-  document.title = "Epstein Clicker - Play";
+  const gameTitle = state.safeMode ? "MrBeast Clicker - Play" : "Epstein Clicker - Play";
+  document.title = gameTitle;
   if (el.pageTitle) {
-    el.pageTitle.textContent = "Epstein Clicker - Play";
+    el.pageTitle.textContent = gameTitle;
   }
   if (el.safeModeBadge) {
     el.safeModeBadge.textContent = `SAFE MODE: ${state.safeMode ? "ON" : "OFF"}`;
   }
   if (el.subjectHeading) {
-    el.subjectHeading.textContent = state.easterUnlocked ? "EPSTEIN CLICKER [NEON MODE]" : "EPSTEIN CLICKER";
+    const titleBase = state.safeMode ? "MRBEAST CLICKER" : "EPSTEIN CLICKER";
+    el.subjectHeading.textContent = state.easterUnlocked ? `${titleBase} [GOLD RUSH]` : titleBase;
   }
   if (el.clickBtn) {
     el.clickBtn.src = active[2];
-    el.clickBtn.alt = `${active[1]} portrait`;
+    el.clickBtn.alt = `${safeText(active[1])} portrait`;
   }
   if (el.skinSelect) {
     el.skinSelect.value = state.selectedSkin;
+    Array.from(el.skinSelect.options).forEach((option) => {
+      const match = SKINS.find((skin) => skin[0] === option.value);
+      if (match) {
+        option.textContent = safeText(match[1]);
+      }
+    });
   }
   if (el.safeToggle) {
     el.safeToggle.checked = state.safeMode;
@@ -582,9 +605,9 @@ function renderLevels() {
 }
 
 function setSummary(text) {
-  state.lastBulkSummary = text;
+  state.lastBulkSummary = safeText(text);
   if (el.summary) {
-    el.summary.textContent = text;
+    el.summary.textContent = state.lastBulkSummary;
   }
 }
 
@@ -668,6 +691,8 @@ function refreshShop() {
     }
     const buyPlan = purchasePlan(upgrade, state.score10, state.buyMode);
     const bulkPlan = maxPlan(upgrade, state.score10);
+    const shownName = safeText(upgrade.name);
+    node.text.previousElementSibling.textContent = shownName;
     node.text.innerHTML = `Owned: x${commas(upgrade.owned)}<br>+${named(upgrade.add)} per click<br>Cost: ${named(upgrade.cost)}`;
     node.buy.textContent = `BUY ${state.buyMode}X`;
     node.max.textContent = bulkPlan.count > 0n ? `MAX (${commas(bulkPlan.count)})` : "MAX";
@@ -685,7 +710,7 @@ function buyUpgrade(id, count) {
   if (!applyPlan(upgrade, plan)) {
     return;
   }
-  setSummary(`BOUGHT ${plan.count} ${upgrade.name.toUpperCase()}.`);
+  setSummary(`BOUGHT ${plan.count} ${safeText(upgrade.name).toUpperCase()}.`);
   renderAll();
 }
 
@@ -698,13 +723,19 @@ function buyUpgradeMax(id) {
   if (!applyPlan(upgrade, plan)) {
     return;
   }
-  setSummary(`MAX BOUGHT ${plan.count} ${upgrade.name.toUpperCase()}.`);
+  setSummary(`MAX BOUGHT ${plan.count} ${safeText(upgrade.name).toUpperCase()}.`);
   renderAll();
 }
 
 function buyAll() {
   let total = 0n;
-  for (const upgrade of state.upgrades) {
+  const ordered = [...state.upgrades].sort((a, b) => {
+    if (a.cost === b.cost) {
+      return 0;
+    }
+    return a.cost > b.cost ? -1 : 1;
+  });
+  for (const upgrade of ordered) {
     const plan = purchasePlan(upgrade, state.score10, state.buyMode);
     if (applyPlan(upgrade, plan)) {
       total += plan.count;
@@ -754,14 +785,18 @@ function pulsePortrait() {
   if (!el.clickBtn) {
     return;
   }
-  el.clickBtn.classList.remove("is-pressed");
-  void el.clickBtn.offsetWidth;
-  el.clickBtn.classList.add("is-pressed");
-  setTimeout(() => {
-    if (el.clickBtn) {
-      el.clickBtn.classList.remove("is-pressed");
+  el.clickBtn.animate(
+    [
+      { transform: "scale(1)", filter: "brightness(1)" },
+      { transform: "scale(0.93)", filter: "brightness(1.15)" },
+      { transform: "scale(1.04)", filter: "brightness(1.08)" },
+      { transform: "scale(1)", filter: "brightness(1)" }
+    ],
+    {
+      duration: 120,
+      easing: "ease-out"
     }
-  }, 105);
+  );
 }
 
 function doClick(point) {
@@ -786,7 +821,14 @@ function handleEasterEgg(code) {
   if (KONAMI.every((value, index) => easterProgress[index] === value)) {
     state.easterUnlocked = true;
     document.body.classList.add("easter-on");
-    setSummary("NEON MODE UNLOCKED.");
+    setSummary("GOLD RUSH UNLOCKED.");
+    for (let index = 0; index < 16; index += 1) {
+      floatText(
+        index % 2 === 0 ? "GOLD RUSH" : "SECRET",
+        80 + Math.random() * (window.innerWidth - 160),
+        120 + Math.random() * (window.innerHeight - 220)
+      );
+    }
     markDirty();
     renderSkin();
     easterProgress = [];
@@ -964,6 +1006,8 @@ if (saved && !restore(saved)) {
 }
 if (localStorage.getItem(WARNING_KEY) === "1" && el.warning) {
   el.warning.hidden = true;
+} else if (el.warning) {
+  el.warning.hidden = false;
 }
 renderAll();
 attachEvents();
