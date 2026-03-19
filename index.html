@@ -33,7 +33,7 @@
       dataLayer.push(arguments);
     }
     gtag("js", new Date());
-    gtag("config", "G-GRRLD38PB9");
+    gtag("config", "G-GRRLD38PB9", { client_storage: "none" });
   </script>
 </head>
 <body class="scanlines page">
@@ -68,13 +68,29 @@
 
         <div class="mainLayout playCoreLayout">
           <aside class="sidePanel panel" id="progressPanel">
-            <h2>LEVELS</h2>
+            <h2>[ STATS ]</h2>
+            <div class="statSectionTitle">[ LEVEL ]</div>
             <div class="miniStat">LEVEL: <span id="currentLevel">1</span></div>
+            <div class="miniStat">NAME: <span id="currentLevelName">Witness List</span></div>
             <div class="miniStat">NEXT: <span id="nextLevel">1 thousand</span></div>
             <div class="miniStat">PROGRESS: <span id="levelProgress">0%</span></div>
             <div class="progressBarContainer">
               <div class="progressBar" id="progressBar"></div>
             </div>
+            <div class="statDivider"></div>
+            <div class="statSectionTitle">[ CLICKS ]</div>
+            <div class="miniStat">RAW: <span id="rawClicks">0</span></div>
+            <div class="miniStat">PER CLICK: <span id="statPerClick">1</span></div>
+            <div class="miniStat">PER SEC: <span id="statPerSec">0.1</span></div>
+            <div class="miniStat">CLICKS/MIN: <span id="clicksPerMin">0.0</span></div>
+            <div class="statDivider"></div>
+            <div class="statSectionTitle">[ TIME ]</div>
+            <div class="miniStat">HOURS: <span id="hoursPlayed">0.00</span></div>
+            <div class="miniStat">SESSION: <span id="sessionTime">00:00:00</span></div>
+            <div class="statDivider"></div>
+            <div class="statSectionTitle">[ UPGRADES ]</div>
+            <div class="miniStat">TOTAL OWNED: <span id="totalUpgradesStat">0</span></div>
+            <div class="miniStat">MODE: <span id="buyModeReadout">1X</span></div>
             <details class="levelDropdown">
               <summary>NEXT 30 LEVELS</summary>
               <div id="levelList" class="levelList"></div>
@@ -99,6 +115,11 @@
                 <span id="safeModeBadge">SAFE MODE: OFF</span>
                 <input id="safeModeToggle" type="checkbox" aria-label="Toggle safe mode">
               </label>
+              <div class="buyModeRow" aria-label="buy mode toggles">
+                <button id="buyMode1Btn" type="button" class="modeBtn is-active">1X</button>
+                <button id="buyMode10Btn" type="button" class="modeBtn">10X</button>
+                <button id="buyMode100Btn" type="button" class="modeBtn">100X</button>
+              </div>
               <button id="buyAllBtn" type="button">BUY ALL</button>
               <p class="footer" id="buyAllSummary">BUY ALL READY.</p>
               <button id="resetBtn" class="danger" type="button">RESET</button>
@@ -129,6 +150,19 @@
       <h2>SAVE RESET</h2>
       <p id="tamperMessage">The save was reset to keep the game stable.</p>
       <button id="tamperAcknowledgeBtn" type="button">OK</button>
+    </div>
+  </div>
+
+  <div id="contentWarningOverlay" class="overlay">
+    <div class="overlay-card">
+      <h2>CONTENT WARNING</h2>
+      <p>This game was only enhanced by me, it was made by Cole.</p>
+      <p>This game is not meant to harm or offend anyone, it is made for entertainment purposes only. Play at <a href="https://sites.google.com/view/staticquasar931/gm3z/epstein-clicker" target="_blank" rel="noopener noreferrer">staticquasar931/gm3z/epstein-clicker</a>. Image assets are used, none are explicit or promoting harm of any kind.</p>
+      <label class="warningToggle">
+        <input id="dismissWarningToggle" type="checkbox">
+        <span>DO NOT SHOW THIS AGAIN</span>
+      </label>
+      <button id="contentWarningBtn" type="button">CONTINUE</button>
     </div>
   </div>
 

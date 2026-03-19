@@ -294,6 +294,21 @@ body.page{
   margin-bottom:8px;
 }
 
+.statSectionTitle{
+  font-size:10px;
+  color:var(--cyan);
+  text-align:left;
+  margin:10px 0 8px;
+  text-shadow:0 0 6px rgba(0,255,255,.5);
+}
+
+.statDivider{
+  height:2px;
+  margin:10px 0;
+  background:repeating-linear-gradient(90deg,var(--green) 0px,var(--green) 4px,transparent 4px,transparent 8px);
+  box-shadow:0 0 6px rgba(0,255,90,.5);
+}
+
 .progressBarContainer{
   margin-top:10px;
   height:14px;
@@ -405,6 +420,24 @@ input[type="checkbox"]::after{
 input[type="checkbox"]:checked::after{
   transform:translateX(30px);
   background:var(--cyan);
+}
+
+.buyModeRow{
+  display:grid;
+  grid-template-columns:repeat(3, minmax(0, 1fr));
+  gap:8px;
+}
+
+.modeBtn{
+  min-width:0;
+  padding:10px 6px;
+}
+
+.modeBtn.is-active{
+  color:var(--cyan);
+  border-color:var(--cyan);
+  background:linear-gradient(135deg, #00131a 0%, #002733 100%);
+  box-shadow:0 0 15px rgba(0,255,255,.35), inset 0 0 12px rgba(0,255,255,.12);
 }
 
 button{
@@ -557,6 +590,25 @@ button:disabled{
   font-size:12px;
   line-height:1.8;
   color:#fff;
+}
+
+.warningToggle{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  margin:16px 0;
+  font-size:9px;
+}
+
+.warningToggle input{
+  width:20px;
+  height:20px;
+}
+
+.overlay-card a{
+  color:var(--cyan);
+  text-decoration:underline;
 }
 
 .siteFooter{
