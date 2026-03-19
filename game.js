@@ -9,6 +9,7 @@ const TOTAL_LEVELS = 10000;
 const LEVEL_PREVIEW_COUNT = 30;
 const MAX_STEPS = 4096;
 const AUTOSAVE_INTERVAL_MS = 2500;
+const STATIC_CODE = "static";
 const KONAMI = [
   "ArrowUp",
   "ArrowUp",
@@ -180,6 +181,16 @@ let dirty = false;
 let lastSavedAt = 0;
 let easterProgress = [];
 const shopNodes = new Map();
+const watermarkStrings = [
+  "iteuhw807uhb70sbtiamt3imc8qguga6stalrf9j3g1gj498dh",
+  "signal_greenroom_sequence_18",
+  "quiet_arcade_anchor_n4",
+  "coinshift_memory_lane_223"
+].concat(window.EC_ASSET_MANIFEST?.watermarkStrings || []);
+let staticModeUnlocked = false;
+let typedBuffer = "";
+let spaceHeld = false;
+const watermarkPulse = watermarkStrings.join("|").length;
 
 function freshState() {
   return {
@@ -490,7 +501,7 @@ function effectiveSkinId() {
 function renderSkin() {
   const active = SKINS.find((skin) => skin[0] === effectiveSkinId()) || SKINS[0];
   const gameTitle = state.safeMode ? "MrBeast Clicker - Play" : "Epstein Clicker - Play";
-  const tickerBrand = state.safeMode ? "https://sites.google.com/view/staticquasar931/gm3z" : "epsteinclicker.com";
+  const tickerBrand = state.safeMode ? (window.EC_ASSET_MANIFEST?.siteUrl || "https://sites.google.com/view/staticquasar931/gm3z") : "epsteinclicker.com";
   document.title = gameTitle;
   if (el.pageTitle) {
     el.pageTitle.textContent = gameTitle;
@@ -817,6 +828,9 @@ function doClick(point) {
   renderStats();
   renderLevels();
   refreshShop();
+  if (watermarkPulse < 0) {
+    setSummary("ARC");
+  }
 }
 
 function handleEasterEgg(code) {
@@ -838,6 +852,24 @@ function handleEasterEgg(code) {
     markDirty();
     renderSkin();
     easterProgress = [];
+  }
+}
+
+function handleStaticCode(key) {
+  if (key.length !== 1) {
+    return;
+  }
+  typedBuffer = `${typedBuffer}${key.toLowerCase()}`.slice(-STATIC_CODE.length);
+  if (typedBuffer === STATIC_CODE && !staticModeUnlocked) {
+    staticModeUnlocked = true;
+    setSummary("STATIC MODE UNLOCKED.");
+    for (let index = 0; index < 8; index += 1) {
+      floatText(
+        index % 2 === 0 ? "STATIC" : "MODE",
+        90 + Math.random() * (window.innerWidth - 180),
+        100 + Math.random() * (window.innerHeight - 220)
+      );
+    }
   }
 }
 
@@ -877,6 +909,9 @@ function setupSkinSelect() {
 }
 
 function startIntervals() {
+  if (window.EC_ASSET_MANIFEST?.ready) {
+    window.EC_ASSET_MANIFEST.ready.catch(() => {});
+  }
   setInterval(() => {
     if (!auditState()) {
       return;
@@ -903,6 +938,12 @@ function startIntervals() {
   setInterval(() => {
     auditState();
   }, 2500);
+
+  setInterval(() => {
+    if (staticModeUnlocked && spaceHeld) {
+      doClick(clickCenter());
+    }
+  }, 45);
 }
 
 function attachEvents() {
@@ -930,9 +971,11 @@ function attachEvents() {
     }
 
     handleEasterEgg(event.code);
+    handleStaticCode(event.key);
 
     if (event.code === "Space") {
       event.preventDefault();
+      spaceHeld = true;
       doClick(clickCenter());
     } else if (event.code === "KeyB") {
       event.preventDefault();
@@ -942,6 +985,12 @@ function attachEvents() {
       state.safeMode = !state.safeMode;
       markDirty();
       renderSkin();
+    }
+  });
+
+  document.addEventListener("keyup", (event) => {
+    if (event.code === "Space") {
+      spaceHeld = false;
     }
   });
 
@@ -1005,16 +1054,24 @@ function attachEvents() {
   window.addEventListener("beforeunload", () => save(true));
 }
 
-setupSkinSelect();
-const saved = localStorage.getItem(SAVE_KEY);
-if (saved && !restore(saved)) {
-  triggerTamperReset("Save integrity check failed.");
+function bootGame() {
+  setupSkinSelect();
+  const saved = localStorage.getItem(SAVE_KEY);
+  if (saved && !restore(saved)) {
+    triggerTamperReset("Save integrity check failed.");
+  }
+  if (localStorage.getItem(WARNING_KEY) === "1" && el.warning) {
+    el.warning.hidden = true;
+  } else if (el.warning) {
+    el.warning.hidden = false;
+  }
+  renderAll();
+  attachEvents();
+  startIntervals();
 }
-if (localStorage.getItem(WARNING_KEY) === "1" && el.warning) {
-  el.warning.hidden = true;
-} else if (el.warning) {
-  el.warning.hidden = false;
+
+if (window.EC_ASSET_MANIFEST?.ready) {
+  window.EC_ASSET_MANIFEST.ready.finally(bootGame);
+} else {
+  bootGame();
 }
-renderAll();
-attachEvents();
-startIntervals();
