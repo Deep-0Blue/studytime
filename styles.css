@@ -147,9 +147,9 @@ body.page{
 
 .game-container{
   width:100%;
-  max-width:1380px;
+  max-width:none;
   margin:0 auto;
-  padding:0 12px;
+  padding:0 18px;
   box-sizing:border-box;
   display:block;
 }
@@ -157,11 +157,11 @@ body.page{
 .pageWrap{
   display:flex;
   flex-direction:column;
-  justify-content:center;
-  align-items:center;
+  justify-content:flex-start;
+  align-items:stretch;
   width:100%;
   margin:0 auto;
-  padding:12px 8px 18px;
+  padding:12px 0 18px;
   position:relative;
   z-index:1;
   box-sizing:border-box;
@@ -171,7 +171,7 @@ body.page{
 .wrap{
   display:flex;
   flex-direction:column;
-  align-items:center;
+  align-items:stretch;
   text-align:center;
   width:100%;
 }
@@ -215,9 +215,9 @@ body.page{
 
 .mainLayout{
   display:grid;
-  grid-template-columns:230px minmax(360px, 1fr) 230px;
-  gap:16px;
-  width:min(1360px, 100%);
+  grid-template-columns:minmax(280px, 320px) minmax(420px, 1fr) minmax(280px, 320px);
+  gap:18px;
+  width:100%;
   align-items:start;
   margin-top:6px;
 }
@@ -270,10 +270,11 @@ body.page{
   border:2px solid var(--green);
   background:rgba(0,15,0,.5);
   box-shadow:0 0 20px rgba(0,255,90,.4), inset 0 0 25px rgba(0,0,0,.5);
-  padding:12px;
+  padding:14px;
   margin:0;
   width:100%;
   text-align:center;
+  box-sizing:border-box;
 }
 
 .panel h2{
@@ -288,14 +289,14 @@ body.page{
 }
 
 .miniStat{
-  font-size:9px;
+  font-size:10px;
   line-height:1.8;
   text-align:left;
   margin-bottom:8px;
 }
 
 .statSectionTitle{
-  font-size:10px;
+  font-size:11px;
   color:var(--cyan);
   text-align:left;
   margin:10px 0 8px;
@@ -333,14 +334,20 @@ body.page{
 
 .levelDropdown{
   margin-top:12px;
-  text-align:left;
+  text-align:center;
 }
 
 .levelDropdown summary{
   cursor:pointer;
-  font-size:9px;
+  font-size:10px;
   color:var(--cyan);
   margin-bottom:10px;
+  list-style:none;
+  text-align:center;
+}
+
+.levelDropdown summary::-webkit-details-marker{
+  display:none;
 }
 
 .levelList{
@@ -352,10 +359,12 @@ body.page{
   display:flex;
   justify-content:space-between;
   gap:10px;
-  font-size:8px;
-  line-height:1.6;
-  padding:6px 4px;
+  font-size:9px;
+  line-height:1.7;
+  padding:8px 6px;
   border-top:1px solid rgba(0,255,90,.3);
+  align-items:center;
+  text-align:center;
 }
 
 .level-item.active{
@@ -380,12 +389,14 @@ body.page{
 
 select{
   width:100%;
-  padding:10px;
-  font-size:9px;
+  padding:11px 12px;
+  font-size:10px;
   background:#000;
   color:var(--green);
   border:2px solid var(--green);
   outline:none;
+  text-align:center;
+  text-align-last:center;
 }
 
 .toggleRow{
@@ -445,7 +456,7 @@ button{
   color:var(--green);
   border:2px solid var(--green);
   padding:12px 14px;
-  font-size:10px;
+  font-size:11px;
   cursor:pointer;
   box-shadow:0 0 10px rgba(0,255,90,.25), inset 0 0 10px rgba(0,255,90,.1);
   border-radius:4px;
@@ -483,20 +494,20 @@ button:disabled{
 .shopGrid{
   display:grid;
   grid-template-columns:repeat(4, minmax(0, 1fr));
-  gap:8px;
+  gap:10px;
 }
 
 .shop-row{
   display:grid;
   gap:10px;
-  padding:8px 7px;
+  padding:10px 9px;
   border:1px solid rgba(0,255,90,.55);
-  font-size:9px;
+  font-size:10px;
   line-height:1.5;
   text-align:left;
   transition:background 0.2s ease;
   background:rgba(0,0,0,.28);
-  min-height:176px;
+  min-height:188px;
 }
 
 .shop-row:hover{
@@ -505,15 +516,15 @@ button:disabled{
 
 .shop-copy h3{
   margin:0;
-  font-size:9px;
-  line-height:1.6;
+  font-size:10px;
+  line-height:1.7;
   color:var(--green);
 }
 
 .shop-copy p{
   margin:8px 0 0;
-  font-size:7px;
-  line-height:1.65;
+  font-size:9px;
+  line-height:1.75;
 }
 
 .shop-actions{
@@ -523,8 +534,9 @@ button:disabled{
 }
 
 .shop-actions button{
-  padding:9px 8px;
-  font-size:8px;
+  padding:10px 8px;
+  font-size:10px;
+  line-height:1.4;
 }
 
 .footer{
@@ -627,9 +639,23 @@ button:disabled{
   opacity:.7;
 }
 
+body.easter-on .title{
+  animation:titleGlow 1.2s ease-in-out infinite;
+}
+
+body.easter-on .panel,
+body.easter-on button{
+  box-shadow:0 0 24px rgba(0,255,255,.35), inset 0 0 18px rgba(0,255,90,.12);
+}
+
 @media (max-width: 1180px){
   .mainLayout{
     grid-template-columns:1fr;
+  }
+
+  .pageWrap{
+    padding-left:0;
+    padding-right:0;
   }
 }
 
@@ -658,5 +684,9 @@ button:disabled{
 
   .shopGrid{
     grid-template-columns:1fr;
+  }
+
+  .level-item{
+    font-size:8px;
   }
 }
