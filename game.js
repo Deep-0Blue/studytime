@@ -83,7 +83,11 @@ const SKINS = [
   ["musk", "Elon Musk", "https://cdn.jsdelivr.net/gh/StaticQuasar931/Wheres-Epstein@main/Assets/Waldos/Special/mus1.png"],
   ["diddy", "Diddy", "https://cdn.jsdelivr.net/gh/StaticQuasar931/Wheres-Epstein@main/Assets/Waldos/advanced/di1.png"],
   ["trump", "Trump", "https://cdn.jsdelivr.net/gh/StaticQuasar931/Wheres-Epstein@main/Assets/Waldos/trum1.png"],
-  ["hawking", "Stephen Hawking", "https://cdn.jsdelivr.net/gh/StaticQuasar931/Wheres-Epstein@main/Assets/Waldos/steph1.png"]
+  ["hawking", "Stephen Hawking", "https://cdn.jsdelivr.net/gh/StaticQuasar931/Wheres-Epstein@main/Assets/Waldos/steph1.png"],
+  ["hitler1", "Adolf Hitler", "Assets/adolf hitler-transparent.png"],
+  ["hitler2", "Adolf Hitler 2", "Assets/adolfhitler-transparent.png"],
+  ["speed1", "IShowSpeed", "Assets/ishowspeed-transparent.png"],
+  ["speed2", "IShowSpeed Bark", "Assets/ishowspeedbark-transparent.png"]
 ];
 
 const UPGRADE_DATA = [
@@ -197,6 +201,7 @@ function freshState() {
     score10: 0n,
     perClick: BASE_PER_CLICK,
     upgradesOwned: 0n,
+    lifetimeIncome10: 0n,
     selectedSkin: "epstein",
     safeMode: false,
     buyMode: 1n,
@@ -257,6 +262,7 @@ function safeText(value) {
   return value
     .replace(/Ironclad Alibi/gi, "Ironclad Giveaway")
     .replace(/Last Minute Lawyer/gi, "Last Minute Helper")
+    .replace(/Diddy Factory/gi, "MrBeast Factory")
     .replace(/Epstein/gi, "MrBeast")
     .replace(/Untouchable/gi, "Friendly")
     .replace(/Baby Oil/gi, "Feastable")
@@ -268,11 +274,23 @@ function safeText(value) {
 }
 
 function formatScore10(value) {
+  const labels = [
+    [1000000000000n, "trillion"],
+    [1000000000n, "billion"],
+    [1000000n, "million"],
+    [1000n, "thousand"]
+  ];
+  for (const [amount, label] of labels) {
+    const scaledThreshold = amount * SCORE_STEP;
+    if (value >= scaledThreshold) {
+      const scaled10 = value / amount;
+      const whole = scaled10 / SCORE_STEP;
+      const tenth = scaled10 % SCORE_STEP;
+      return tenth ? `${whole}.${tenth} ${label}` : `${whole} ${label}`;
+    }
+  }
   const whole = value / SCORE_STEP;
   const tenth = value % SCORE_STEP;
-  if (whole >= 1000000n) {
-    return tenth ? `${named(whole)} ${tenth}/10` : named(whole);
-  }
   return `${commas(whole)}.${tenth}`;
 }
 
@@ -320,6 +338,7 @@ function savePayload() {
     score10: state.score10.toString(),
     perClick: state.perClick.toString(),
     upgradesOwned: state.upgradesOwned.toString(),
+    lifetimeIncome10: state.lifetimeIncome10.toString(),
     selectedSkin: state.selectedSkin,
     safeMode: state.safeMode,
     buyMode: state.buyMode.toString(),
@@ -373,11 +392,13 @@ function restore(raw) {
     const score10 = parseBig(payload.score10);
     const perClick = parseBig(payload.perClick);
     const upgradesOwned = parseBig(payload.upgradesOwned);
+    const lifetimeIncome10 = parseBig(payload.lifetimeIncome10 ?? payload.score10);
     const buyMode = parseBig(payload.buyMode);
     if (
       score10 === null ||
       perClick === null ||
       upgradesOwned === null ||
+      lifetimeIncome10 === null ||
       buyMode === null ||
       !BUY_MODES.includes(buyMode)
     ) {
@@ -406,6 +427,7 @@ function restore(raw) {
       score10,
       perClick,
       upgradesOwned,
+      lifetimeIncome10: lifetimeIncome10 >= score10 ? lifetimeIncome10 : score10,
       selectedSkin: SKINS.some((skin) => skin[0] === payload.selectedSkin) ? payload.selectedSkin : "epstein",
       safeMode: !!payload.safeMode,
       buyMode,
@@ -446,6 +468,10 @@ function auditState() {
     triggerTamperReset("Runtime drift detected.");
     return false;
   }
+  if (state.lifetimeIncome10 < state.score10) {
+    triggerTamperReset("Lifetime income drift detected.");
+    return false;
+  }
   return true;
 }
 
@@ -467,7 +493,7 @@ function levelName(level) {
 }
 
 function currentLevel() {
-  const score = state.score10 / SCORE_STEP;
+  const score = state.lifetimeIncome10 / SCORE_STEP;
   let low = 1;
   let high = TOTAL_LEVELS;
   while (low < high) {
@@ -485,7 +511,7 @@ function levelProgress(level) {
   if (level >= TOTAL_LEVELS) {
     return 100;
   }
-  const score = state.score10 / SCORE_STEP;
+  const score = state.lifetimeIncome10 / SCORE_STEP;
   const currentReq = levelRequirement(level);
   const nextReq = levelRequirement(level + 1);
   return Math.max(0, Math.min(100, Number(((score - currentReq) * 1000n) / (nextReq - currentReq)) / 10));
@@ -495,7 +521,7 @@ function effectiveSkinId() {
   if (!state.safeMode) {
     return state.selectedSkin;
   }
-  return ["epstein", "epstein2", "epstein3"].includes(state.selectedSkin) ? "mrbeast" : state.selectedSkin;
+  return "mrbeast";
 }
 
 function renderSkin() {
@@ -626,6 +652,12 @@ function setSummary(text) {
   if (el.summary) {
     el.summary.textContent = state.lastBulkSummary;
   }
+}
+
+function awardIncome(amount10) {
+  state.score10 += amount10;
+  state.lifetimeIncome10 += amount10;
+  markDirty();
 }
 
 function purchasePlan(upgrade, balance10, wanted) {
@@ -816,9 +848,8 @@ function doClick(point) {
   if (!auditState() || !noteClick(performance.now())) {
     return;
   }
-  state.score10 += state.perClick * SCORE_STEP;
+  awardIncome(state.perClick * SCORE_STEP);
   state.rawClicks += 1;
-  markDirty();
   pulsePortrait();
   floatText(`+${named(state.perClick)}`, point.x, point.y);
   renderStats();
@@ -916,8 +947,7 @@ function startIntervals() {
     const addNow = autoCarry / AUTO_TICKS_PER_SEC;
     autoCarry %= AUTO_TICKS_PER_SEC;
     if (addNow > 0n) {
-      state.score10 += addNow;
-      markDirty();
+      awardIncome(addNow);
       renderStats();
       renderLevels();
       refreshShop();
@@ -1026,6 +1056,12 @@ function attachEvents() {
   el.buyAll.addEventListener("click", buyAll);
 
   el.reset.addEventListener("click", () => {
+    if (!window.confirm("RESET EVERYTHING? ARE YOU ABSOLUTELY, COMPLETELY SURE?")) {
+      return;
+    }
+    if (!window.confirm("FINAL CHECK: DELETE THIS SAVE AND START OVER?")) {
+      return;
+    }
     state = freshState();
     autoCarry = 0n;
     clickTimes = [];

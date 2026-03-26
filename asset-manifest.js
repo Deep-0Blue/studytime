@@ -10,6 +10,10 @@
 
   const IMAGES = [
     "click.png",
+    "Assets/adolf hitler-transparent.png",
+    "Assets/adolfhitler-transparent.png",
+    "Assets/ishowspeed-transparent.png",
+    "Assets/ishowspeedbark-transparent.png",
     "https://cdn.jsdelivr.net/gh/StaticQuasar931/Wheres-Epstein@main/Assets/Waldos/eps1.png",
     "https://cdn.jsdelivr.net/gh/StaticQuasar931/Wheres-Epstein@main/Assets/Waldos/advanced/ep12.png",
     "https://cdn.jsdelivr.net/gh/StaticQuasar931/Wheres-Epstein@main/Assets/Waldos/Special/mb1.png",
